@@ -1,0 +1,36 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(serial_example)
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  serial
+  std_msgs
+  rospy
+  message_generation
+)
+add_message_files(
+	FILES
+    serialChar.msg
+)
+
+generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+)
+catkin_package(
+  CATKIN_DEPENDS
+    serial
+    std_msgs
+    CATKIN_DEPENDS message_runtime
+)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+
+add_executable(serial_example_node src/serial_example_node.cpp)
+
+target_link_libraries(serial_example_node
+  ${catkin_LIBRARIES}
+)
+
