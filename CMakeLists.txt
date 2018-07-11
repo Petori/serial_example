@@ -33,4 +33,8 @@ add_executable(serial_example_node src/serial_example_node.cpp)
 target_link_libraries(serial_example_node
   ${catkin_LIBRARIES}
 )
+add_executable(test_listen src/test_listen.cpp)
 
+target_link_libraries(test_listen
+  ${catkin_LIBRARIES}
+)

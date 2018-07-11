@@ -1,4 +1,4 @@
-/***
+﻿/***
  * This example expects the serial port has a loopback on it.
  *
  * Alternatively, you could use an Arduino:
@@ -26,6 +26,7 @@
 #include <std_msgs/Int8.h>
 #include <ostream>
 #include <string>
+#include <unistd.h>
 
 std::string Motor1Set(unsigned int _HZ, unsigned int _Pos);
 std::string Motor1Stop();
@@ -41,36 +42,23 @@ const char AddrMotor2HZ[4] = { 0x31, 0x31, 0x39, 0x30 };
 const char AddrMotor1EN[4] = { 0x31, 0x32, 0x35, 0x38 };
 const char AddrMotor2EN[4] = { 0x31, 0x33, 0x32, 0x30 };
 
-serial::Serial ser;
-
 int main (int argc, char** argv){
     ros::init(argc, argv, "serial_example_node");
     ros::NodeHandle nh;
 
-    ros::Publisher char_pub = nh.advertise<serial_example::serialChar>("pub_char", 1000);
+    serial::Serial ser;
 
-    serial_example::serialChar dataSet;
-    dataSet.serialChar.push_back(0x02);
-    dataSet.serialChar.push_back(0x31);
+    std::string set1;
+    std::string run1;
+    std::string set2;
+    std::string run2;
+    std::string stop2;
 
-    std::string set;
-    std::string run;
-    char *dataset;
-    int length;
-
-    set.clear();
-    set = Motor1Set(1, 10);
-    run = Motor1Run(false);
-    set = set + run;
-
-    length = set.length();
-    dataset = (char *)malloc(sizeof(char) * length);
-
-    for (int i = 0; i < length; i++)
-    {
-            dataset[i] = set.at(i);
-            dataSet.serialChar.push_back(dataset[i]);
-    }
+    set1 = Motor1Set(200000, 200000);
+    run1 = Motor1Run(true);
+    set2 = Motor2Set(200000, 200000);
+    run2 = Motor2Run(true);
+    stop2 = Motor2Stop();
 
     try
     {
@@ -87,22 +75,22 @@ int main (int argc, char** argv){
     }
 
     if(ser.isOpen()){
-        ROS_INFO_STREAM("Serial Port initialized");
+        ROS_INFO_STREAM("Serial Port is Opened");
     }else{
         return -1;
     }
+    ser.write(set1);
+    sleep(1);
+    ser.write(run1);
+    sleep(1);
+    ser.write(set2);
+    sleep(1);
+    ser.write(run2);
+    usleep(500000);
+    ser.write(stop2);
 
-    ros::Rate loop_rate(5);
-
-    while(ros::ok()){
-
-        ros::spinOnce();
-
-        if(ser.available()){
-            char_pub.publish(dataSet);
-        }
-        loop_rate.sleep();
-
+    while(ros::ok())
+    {
     }
 }
 
@@ -299,4 +287,3 @@ std::string Motor2Run(bool _Dir)
 
         return _PLCFram;
 }
-
