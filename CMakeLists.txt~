@@ -39,8 +39,8 @@ target_link_libraries(test_listen
   ${catkin_LIBRARIES}
 )
 
-add_executable(moveByComu src/moveByComu.cpp)
+add_executable(serial_example_node src/serial_example_node.cpp)
 
-target_link_libraries(moveByComu
+target_link_libraries(serial_example_node
   ${catkin_LIBRARIES}
 )
