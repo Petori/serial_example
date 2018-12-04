@@ -34,14 +34,9 @@ std::string Motor1Stop();
 std::string Motor1Run(bool _Dir);
 std::string GetASCII(unsigned int _One, unsigned int _Bit4);
 char OneToASCII(int _One);
-std::string Motor2Set(unsigned int _HZ, unsigned int _Pos);
-std::string Motor2Stop();
-std::string Motor2Run(bool _Dir);
 
 const char AddrMotor1HZ[4] = { 0x31, 0x30, 0x43, 0x38 };
-const char AddrMotor2HZ[4] = { 0x31, 0x31, 0x39, 0x30 };
 const char AddrMotor1EN[4] = { 0x31, 0x32, 0x35, 0x38 };
-const char AddrMotor2EN[4] = { 0x31, 0x33, 0x32, 0x30 };
 
 std_msgs::Int8 getv;
 void getvalue(std_msgs::Int8 value);
@@ -56,26 +51,12 @@ int main (int argc, char** argv){
 
     std::string set1;
     std::string run1;
-    std::string set2;
-    std::string run2;
-    std::string stop2;
+    std::string stop1;
 
-    set1 = Motor1Set(200000, 200000);
-    run1 = Motor1Run(true);
-    set2 = Motor2Set(200000, 200000);
-    run2 = Motor2Run(true);
-    stop2 = Motor2Stop();
+    set1 = Motor1Set(200000, 600000);
+    run1 = Motor1Run(false);
+    stop1 = Motor1Stop();
     ros::Subscriber subscriber1 = nh.subscribe<std_msgs::Int8>("chatter_test", 1, getvalue);
-
-while(1)
-{
-    if (getv.data == 6)
-    {
-        ROS_INFO_STREAM("I got message from chatter_test");
-        sleep(10);
-    }
-}
-
 
     try
     {
@@ -96,20 +77,19 @@ while(1)
     }else{
         return -1;
     }
+    ROS_INFO_STREAM("Waiting for message from robot...");
 
-        
-    ser.write(set1);
-    sleep(1);
-    ser.write(run1);
-    sleep(1);
-    ser.write(set2);
-    sleep(1);
-    ser.write(run2);
-    usleep(500000);
-    ser.write(stop2);
-
-    while(ros::ok())
+    while(1)
     {
+        if (getv.data == 6)
+        {
+            ROS_INFO_STREAM("I got message from robot. Now move the guide.");
+            ser.write(set1);
+            sleep(1);
+            ser.write(run1);
+            sleep(7);
+            break;
+        }
     }
 }
 
@@ -224,90 +204,4 @@ char OneToASCII(int _One)
         if (_One >= 0 && _One<10) return _One + 0x30;
         if (_One<16 && _One>9) return _One - 10 + 0x41;
         else return 0;
-}
-
-std::string Motor2Set(unsigned int _HZ, unsigned int _Pos)
-{
-        std::string _PLCFram;
-        _PLCFram.clear();
-        _PLCFram = _PLCFram + char(0x02);
-        _PLCFram = _PLCFram + char(0x31);
-
-        for (int ii = 0; ii<4; ii++) _PLCFram = _PLCFram + AddrMotor2HZ[ii];
-
-        _PLCFram = _PLCFram + char(0x30);
-        _PLCFram = _PLCFram + char(0x38);
-
-        _PLCFram = _PLCFram + GetASCII(_HZ, 4);
-        _PLCFram = _PLCFram + GetASCII(_Pos, 4);
-
-        _PLCFram = _PLCFram + char(0x03);
-
-        unsigned char _CharData = 0;
-        for (int i = 1; i<_PLCFram.size(); i++)
-        {
-                _CharData += _PLCFram[i];
-        }
-        _PLCFram = _PLCFram + GetASCII(_CharData, 1);
-
-        return _PLCFram;
-}
-
-std::string Motor2Stop()
-{
-        std::string _PLCFram;
-        _PLCFram.clear();
-        _PLCFram = _PLCFram + char(0x02);
-        _PLCFram = _PLCFram + char(0x31);
-
-        for (int ii = 0; ii<4; ii++) _PLCFram = _PLCFram + AddrMotor2EN[ii];
-
-        _PLCFram = _PLCFram + char(0x30);
-        _PLCFram = _PLCFram + char(0x32);
-
-        _PLCFram = _PLCFram + char(0x30);
-        _PLCFram = _PLCFram + char(0x30);
-        _PLCFram = _PLCFram + char(0x30);
-        _PLCFram = _PLCFram + char(0x30);
-
-        _PLCFram = _PLCFram + char(0x03);
-
-        unsigned char _CharData = 0;
-        for (int i = 1; i<_PLCFram.size(); i++)
-        {
-                _CharData += _PLCFram[i];
-        }
-        _PLCFram = _PLCFram + GetASCII(_CharData, 1);
-
-        return _PLCFram;
-}
-
-std::string Motor2Run(bool _Dir)
-{
-        std::string _PLCFram;
-        _PLCFram.clear();
-        _PLCFram = _PLCFram + char(0x02);
-        _PLCFram = _PLCFram + char(0x31);
-
-        for (int ii = 0; ii<4; ii++) _PLCFram = _PLCFram + AddrMotor2EN[ii];
-
-        _PLCFram = _PLCFram + char(0x30);
-        _PLCFram = _PLCFram + char(0x32);
-
-        _PLCFram = _PLCFram + char(0x30);
-        if (_Dir) _PLCFram = _PLCFram + char(0x32);// I guess the two ASCII code mean the direction.
-        else _PLCFram = _PLCFram + char(0x31);
-        _PLCFram = _PLCFram + char(0x30);
-        _PLCFram = _PLCFram + char(0x30);
-
-        _PLCFram = _PLCFram + char(0x03);
-
-        unsigned char _CharData = 0;
-        for (int i = 1; i<_PLCFram.size(); i++)
-        {
-                _CharData += _PLCFram[i];
-        }
-        _PLCFram = _PLCFram + GetASCII(_CharData, 1);
-
-        return _PLCFram;
 }

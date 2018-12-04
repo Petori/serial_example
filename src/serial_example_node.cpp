@@ -52,12 +52,14 @@ int main (int argc, char** argv){
     std::string run1;
     std::string set2;
     std::string run2;
+    std::string stop1;
     std::string stop2;
 
     set1 = Motor1Set(200000, 200000);
     run1 = Motor1Run(true);
     set2 = Motor2Set(200000, 200000);
     run2 = Motor2Run(true);
+    stop1 = Motor1Stop();
     stop2 = Motor2Stop();
 
     try
@@ -83,15 +85,14 @@ int main (int argc, char** argv){
     sleep(1);
     ser.write(run1);
     sleep(1);
-    ser.write(set2);
+    ser.write(stop1);
     sleep(1);
-    ser.write(run2);
-    usleep(500000);
-    ser.write(stop2);
-
-    while(ros::ok())
-    {
-    }
+//    ser.write(set2);
+//    sleep(1);
+//    ser.write(run2);
+//    usleep(500000);
+//    ser.write(stop2);
+    ROS_INFO_STREAM("Move finished.");
 }
 
 std::string Motor1Set(unsigned int _HZ, unsigned int _Pos)
