@@ -55,10 +55,11 @@ int main (int argc, char** argv){
     std::string stop1;
     std::string stop2;
 
-    set1 = Motor1Set(200000, 200000);
+    set1 = Motor1Set(200000, 2000000);
+    // true 靠近，false 远离
     run1 = Motor1Run(true);
-    set2 = Motor2Set(200000, 200000);
-    run2 = Motor2Run(true);
+    set2 = Motor2Set(200000, 2000000);
+    run2 = Motor2Run(false);
     stop1 = Motor1Stop();
     stop2 = Motor2Stop();
 
@@ -90,7 +91,7 @@ int main (int argc, char** argv){
 //    ser.write(set2);
 //    sleep(1);
 //    ser.write(run2);
-//    usleep(500000);
+//    sleep(3);
 //    ser.write(stop2);
     ROS_INFO_STREAM("Move finished.");
 }
