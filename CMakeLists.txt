@@ -33,6 +33,7 @@ add_executable(serial_example_node src/serial_example_node.cpp)
 target_link_libraries(serial_example_node
   ${catkin_LIBRARIES}
 )
+
 add_executable(test_listen src/test_listen.cpp)
 
 target_link_libraries(test_listen
@@ -44,3 +45,10 @@ add_executable(moveByComu src/moveByComu.cpp)
 target_link_libraries(moveByComu
   ${catkin_LIBRARIES}
 )
+
+add_executable(moveControl src/moveControl.cpp)
+
+target_link_libraries(moveControl
+  ${catkin_LIBRARIES}
+)
+

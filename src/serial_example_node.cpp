@@ -20,6 +20,7 @@
 #include <serial/serial.h>
 #include "serial_example/serialChar.h"
 #include <std_msgs/String.h>
+#include <std_msgs/Char.h>
 #include <std_msgs/Empty.h>
 #include <iostream>
 #include <vector>
@@ -36,30 +37,38 @@ char OneToASCII(int _One);
 std::string Motor2Set(unsigned int _HZ, unsigned int _Pos);
 std::string Motor2Stop();
 std::string Motor2Run(bool _Dir);
+char command;
 
 const char AddrMotor1HZ[4] = { 0x31, 0x30, 0x43, 0x38 };
 const char AddrMotor2HZ[4] = { 0x31, 0x31, 0x39, 0x30 };
 const char AddrMotor1EN[4] = { 0x31, 0x32, 0x35, 0x38 };
 const char AddrMotor2EN[4] = { 0x31, 0x33, 0x32, 0x30 };
 
+void receiveCommand(std_msgs::Char cc);
+
 int main (int argc, char** argv){
     ros::init(argc, argv, "serial_example_node");
     ros::NodeHandle nh;
+    ros::Subscriber subsub = nh.subscribe<std_msgs::Char>("command_pub",1,receiveCommand);
 
     serial::Serial ser;
 
     std::string set1;
-    std::string run1;
     std::string set2;
-    std::string run2;
+    std::string run1c;
+    std::string run1f;
+    std::string run2c;
+    std::string run2f;
     std::string stop1;
     std::string stop2;
 
     set1 = Motor1Set(200000, 2000000);
     // true 靠近，false 远离
-    run1 = Motor1Run(true);
+    run1c = Motor1Run(true);
+    run1f = Motor1Run(false);
     set2 = Motor2Set(200000, 2000000);
-    run2 = Motor2Run(false);
+    run2c = Motor2Run(true);
+    run2f = Motor2Run(false);
     stop1 = Motor1Stop();
     stop2 = Motor2Stop();
 
@@ -82,18 +91,53 @@ int main (int argc, char** argv){
     }else{
         return -1;
     }
-    ser.write(set1);
-    sleep(1);
-    ser.write(run1);
-    sleep(1);
-    ser.write(stop1);
-    sleep(1);
-//    ser.write(set2);
-//    sleep(1);
-//    ser.write(run2);
-//    sleep(3);
-//    ser.write(stop2);
-    ROS_INFO_STREAM("Move finished.");
+
+    ROS_INFO_STREAM("waiting for command ...");
+
+    while(ros::ok())
+    {
+        if(command == '1')
+            {
+            ser.write(set1);
+            usleep(500000);
+            ser.write(run1c);
+            sleep(1);
+        }
+        else if (command == '2')
+            {
+            ser.write(set1);
+            usleep(500000);
+            ser.write(run1f);
+            sleep(1);
+        }
+        else if (command == '3')
+            {
+            ser.write(set2);
+            usleep(500000);
+            ser.write(run2c);
+            sleep(1);
+        }
+        else if (command == '4')
+            {
+            ser.write(set2);
+            usleep(500000);
+            ser.write(run2f);
+            sleep(1);
+        }
+        else if (command == '5')
+            {
+            ser.write(stop1);
+            usleep(500000);
+            ser.write(stop2);
+            usleep(500000);
+        }
+        else if (command == 's')
+            {
+            break;
+        }
+        ROS_INFO_STREAM("Move finished.");
+    }
+    return 0;
 }
 
 std::string Motor1Set(unsigned int _HZ, unsigned int _Pos)
@@ -288,4 +332,9 @@ std::string Motor2Run(bool _Dir)
         _PLCFram = _PLCFram + GetASCII(_CharData, 1);
 
         return _PLCFram;
+}
+
+void receiveCommand(std_msgs::Char cc)
+{
+    command = cc.data;
 }
