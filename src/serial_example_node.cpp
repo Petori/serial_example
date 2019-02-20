@@ -49,7 +49,9 @@ void receiveCommand(std_msgs::Char cc);
 int main (int argc, char** argv){
     ros::init(argc, argv, "serial_example_node");
     ros::NodeHandle nh;
-    ros::Subscriber subsub = nh.subscribe<std_msgs::Char>("command_pub",1,receiveCommand);
+    ros::AsyncSpinner spinner(1);
+    spinner.start();
+    ros::Subscriber subsub = nh.subscribe<std_msgs::Char>("command_pub",10,receiveCommand);
 
     serial::Serial ser;
 
@@ -71,6 +73,8 @@ int main (int argc, char** argv){
     run2f = Motor2Run(false);
     stop1 = Motor1Stop();
     stop2 = Motor2Stop();
+
+    command = '0';
 
     try
     {
@@ -130,12 +134,13 @@ int main (int argc, char** argv){
             usleep(500000);
             ser.write(stop2);
             usleep(500000);
+            ROS_INFO_STREAM("Move finished.");
         }
         else if (command == 's')
             {
             break;
         }
-        ROS_INFO_STREAM("Move finished.");
+
     }
     return 0;
 }
@@ -337,4 +342,5 @@ std::string Motor2Run(bool _Dir)
 void receiveCommand(std_msgs::Char cc)
 {
     command = cc.data;
+    ROS_INFO("I got one message.");
 }
